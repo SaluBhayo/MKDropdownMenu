@@ -8,18 +8,17 @@
 
 #import "ChildViewController.h"
 #import "ShapeSelectView.h"
-#import "LineWidthSelectView.h"
 
 NS_ENUM(NSInteger, DropdownComponents) {
     DropdownComponentShape = 0,
     DropdownComponentColor,
-    DropdownComponentLineWidth,
     DropdownComponentsCount
 };
 
 @interface ChildViewController ()
 @property (strong, nonatomic) NSArray<NSString *> *componentTitles;
 @property (strong, nonatomic) NSArray<NSString *> *shapeTitles;
+@property (assign, nonatomic) int shapeColors;
 @end
 
 @implementation ChildViewController
@@ -27,8 +26,9 @@ NS_ENUM(NSInteger, DropdownComponents) {
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    self.componentTitles = @[@"Shape", @"Color", @"Line Width"];
-    self.shapeTitles = @[@"Circle", @"Triangle", @"Rectangle", @"Pentagon", @"Hexagon"];
+    self.componentTitles = @[@"Color", @"Shape", @"Line Width"];
+    self.shapeTitles = @[@"Black", @"Gray", @"Blue", @"Red", @"Green", @"Yellow"];
+    self.shapeColors = 6;
     
     
     // Set up dropdown menu loaded from storyboard
@@ -51,25 +51,23 @@ NS_ENUM(NSInteger, DropdownComponents) {
     // Set up shape view
     
     self.shapeView.sidesCount = 2;
-    self.shapeView.fillColor = [UIColor lightGrayColor];
-    self.shapeView.strokeColor = [UIColor darkGrayColor];
+    self.shapeView.fillColor = [self colorForRow:0];
+    self.shapeView.strokeColor = [UIColor clearColor];
     self.shapeView.lineWidth = 1;
 }
 
 #pragma mark - MKDropdownMenuDataSource
 
 - (NSInteger)numberOfComponentsInDropdownMenu:(MKDropdownMenu *)dropdownMenu {
-    return DropdownComponentsCount;
+    return 1;
 }
 
 - (NSInteger)dropdownMenu:(MKDropdownMenu *)dropdownMenu numberOfRowsInComponent:(NSInteger)component {
     switch (component) {
         case DropdownComponentShape:
-            return 5;
+            return [self.shapeTitles count];
         case DropdownComponentColor:
-            return 64;
-        case DropdownComponentLineWidth:
-            return 8;
+            return _shapeColors;
         default:
             return 0;
     }
@@ -85,8 +83,8 @@ NS_ENUM(NSInteger, DropdownComponents) {
 }
 
 - (CGFloat)dropdownMenu:(MKDropdownMenu *)dropdownMenu widthForComponent:(NSInteger)component {
-    if (component == DropdownComponentShape || component == DropdownComponentLineWidth) {
-        return MAX(dropdownMenu.bounds.size.width/3, 125);
+    if (component == DropdownComponentShape) {
+        return 20;
     }
     return 0; // use automatic width
 }
@@ -95,18 +93,19 @@ NS_ENUM(NSInteger, DropdownComponents) {
     return NO;
 }
 
-- (NSAttributedString *)dropdownMenu:(MKDropdownMenu *)dropdownMenu attributedTitleForComponent:(NSInteger)component {
-    return [[NSAttributedString alloc] initWithString:self.componentTitles[component]
-                                           attributes:@{NSFontAttributeName: [UIFont systemFontOfSize:16 weight:UIFontWeightLight],
-                                                        NSForegroundColorAttributeName: self.view.tintColor}];
-}
+//- (NSAttributedString *)dropdownMenu:(MKDropdownMenu *)dropdownMenu attributedTitleForComponent:(NSInteger)component {
+////    return [[NSAttributedString alloc] initWithString:self.componentTitles[component]
+////                                           attributes:@{NSFontAttributeName: [UIFont systemFontOfSize:16 weight:UIFontWeightLight],
+////                                                        NSForegroundColorAttributeName: self.view.tintColor}];
+//    return [[NSAttributedString alloc] init];
+//}
 
-- (NSAttributedString *)dropdownMenu:(MKDropdownMenu *)dropdownMenu attributedTitleForSelectedComponent:(NSInteger)component {
-    return [[NSAttributedString alloc] initWithString:self.componentTitles[component]
-                                           attributes:@{NSFontAttributeName: [UIFont systemFontOfSize:16 weight:UIFontWeightRegular],
-                                                        NSForegroundColorAttributeName: self.view.tintColor}];
-
-}
+//- (NSAttributedString *)dropdownMenu:(MKDropdownMenu *)dropdownMenu attributedTitleForSelectedComponent:(NSInteger)component {
+////    return [[NSAttributedString alloc] initWithString:self.componentTitles[component]
+////                                           attributes:@{NSFontAttributeName: [UIFont systemFontOfSize:16 weight:UIFontWeightRegular],
+////                                                        NSForegroundColorAttributeName: self.view.tintColor}];
+//    return [[NSAttributedString alloc] init];
+//}
 
 - (UIView *)dropdownMenu:(MKDropdownMenu *)dropdownMenu viewForRow:(NSInteger)row forComponent:(NSInteger)component reusingView:(UIView *)view {
     switch (component) {
@@ -115,44 +114,33 @@ NS_ENUM(NSInteger, DropdownComponents) {
             if (shapeSelectView == nil || ![shapeSelectView isKindOfClass:[ShapeSelectView class]]) {
                 shapeSelectView = [[[NSBundle mainBundle] loadNibNamed:NSStringFromClass([ShapeSelectView class]) owner:nil options:nil] firstObject];
             }
-            shapeSelectView.shapeView.sidesCount = row + 2;
+//            shapeSelectView.shapeView.sidesCount = row + 2;
             shapeSelectView.textLabel.text = self.shapeTitles[row];
-            shapeSelectView.selected = (shapeSelectView.shapeView.sidesCount == self.shapeView.sidesCount);
+            shapeSelectView.textLabel.textColor = shapeSelectView.shapeView.fillColor = [self colorForRow:row];
+            
             return shapeSelectView;
-        }
-        case 2: {
-            LineWidthSelectView *lineWidthSelectView = (LineWidthSelectView *)view;
-            if (lineWidthSelectView == nil || ![lineWidthSelectView isKindOfClass:[LineWidthSelectView class]]) {
-                lineWidthSelectView = [LineWidthSelectView new];
-                lineWidthSelectView.backgroundColor = [UIColor clearColor];
-            }
-            lineWidthSelectView.lineColor = self.view.tintColor;
-            lineWidthSelectView.lineWidth = row * 2 + 1;
-            return lineWidthSelectView;
         }
         default:
             return nil;
     }
 }
 
-- (UIColor *)dropdownMenu:(MKDropdownMenu *)dropdownMenu backgroundColorForRow:(NSInteger)row forComponent:(NSInteger)component {
-    if (component == DropdownComponentColor) {
-        return [self colorForRow:row];
-    }
-    return nil;
-}
+//- (UIColor *)dropdownMenu:(MKDropdownMenu *)dropdownMenu backgroundColorForRow:(NSInteger)row forComponent:(NSInteger)component {
+//    if (component == DropdownComponentColor) {
+//        return [self colorForRow:row];
+//    }
+//    return nil;
+//}
 
 - (void)dropdownMenu:(MKDropdownMenu *)dropdownMenu didSelectRow:(NSInteger)row inComponent:(NSInteger)component {
     switch (component) {
         case DropdownComponentShape:
             self.shapeView.sidesCount = row + 2;
             [dropdownMenu reloadComponent:component];
+            self.shapeView.fillColor = [self colorForRow:row];
             break;
         case DropdownComponentColor:
             self.shapeView.fillColor = [self colorForRow:row];
-            break;
-        case DropdownComponentLineWidth:
-            self.shapeView.lineWidth = row * 2 + 1;
             break;
         default:
             break;
@@ -161,11 +149,40 @@ NS_ENUM(NSInteger, DropdownComponents) {
 
 #pragma mark - Utility
 
-- (UIColor *)colorForRow:(NSInteger)row {
-    return [UIColor colorWithHue:(CGFloat)row/[self.dropdownMenu numberOfRowsInComponent:DropdownComponentColor]
-                      saturation:1.0
-                      brightness:1.0
-                           alpha:1.0];
+//- (UIColor *)colorForRow:(NSInteger)row {
+//    return [UIColor colorWithHue:(CGFloat)row/[self.dropdownMenu numberOfRowsInComponent:DropdownComponentColor]
+//                      saturation:1.0
+//                      brightness:1.0
+//                           alpha:1.0];
+//}
+
+-(UIColor *)colorForRow:(NSInteger)row {
+    UIColor *color;
+    switch (row) {
+        case 0:
+            color = [UIColor blackColor];
+            break;
+        case 1:
+            color = [UIColor grayColor];
+            break;
+        case 2:
+            color = [UIColor blueColor];
+            break;
+        case 3:
+            color = [UIColor redColor];
+            break;
+        case 4:
+            color = [UIColor greenColor];
+            break;
+        case 5:
+            color = [UIColor yellowColor];
+            break;
+        default:
+            color = [UIColor whiteColor];
+            break;
+    }
+    
+    return color;
 }
 
 @end

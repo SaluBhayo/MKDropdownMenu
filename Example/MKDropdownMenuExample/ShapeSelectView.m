@@ -12,16 +12,8 @@
 
 - (void)awakeFromNib {
     [super awakeFromNib];
-    self.shapeView.fillColor = [UIColor clearColor];
-    self.shapeView.strokeColor = self.textLabel.textColor;
+    self.shapeView.strokeColor = [UIColor clearColor];
     self.shapeView.lineWidth = 1;
-}
-
-- (void)setSelected:(BOOL)selected {
-    _selected = selected;
-    self.shapeView.fillColor = selected ? self.shapeView.strokeColor : [UIColor clearColor];
-    self.textLabel.font = [UIFont systemFontOfSize:self.textLabel.font.pointSize
-                                            weight:selected ? UIFontWeightMedium : UIFontWeightLight];
 }
 
 @end

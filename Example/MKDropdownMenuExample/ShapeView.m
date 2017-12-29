@@ -11,7 +11,7 @@
 @implementation ShapeView
 
 - (void)setSidesCount:(NSUInteger)sidesCount {
-    _sidesCount = sidesCount;
+    _sidesCount = 2;
     [self setNeedsDisplay];
 }
 
